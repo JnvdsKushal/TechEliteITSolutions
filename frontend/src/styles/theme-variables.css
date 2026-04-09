@@ -1,0 +1,151 @@
+/* ── src/styles/theme-variables.css ────────────────────────────────────────
+   Import this at the BOTTOM of your index.css:
+   @import './theme-variables.css';
+   
+   This file does TWO things:
+   1. Sets CSS custom properties for the TechElite palette
+   2. Globally overrides Tailwind/base colors in dark mode so even pages
+      that haven't been manually updated get a dark background
+─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Light tokens ─────────────────────────────────────────────────────── */
+:root {
+  --te-bg:         #ffffff;
+  --te-surface:    #f8fafc;
+  --te-card:       #ffffff;
+  --te-border:     #e2e8f0;
+  --te-text:       #0f172a;
+  --te-muted:      #94a3b8;
+}
+
+/* ── Dark tokens ──────────────────────────────────────────────────────── */
+.dark {
+  --te-bg:         #0d1117;
+  --te-surface:    #161b22;
+  --te-card:       #1c2230;
+  --te-border:     #21293a;
+  --te-text:       #e2e8f0;
+  --te-muted:      #64748b;
+}
+
+/* ── GLOBAL dark page background ─────────────────────────────────────── */
+/* This ensures every page goes dark even before you add dark: classes */
+.dark body,
+.dark #root,
+.dark [id="root"] {
+  background-color: #0d1117;
+  color: #e2e8f0;
+}
+
+/* ── Override Tailwind's bg-white in dark mode globally ─────────────── */
+/* Any element with bg-white that hasn't been given a dark: class */
+.dark .bg-white {
+  background-color: #1c2230;
+}
+
+/* Lighter surfaces */
+.dark .bg-gray-50,
+.dark .bg-slate-50 {
+  background-color: #161b22;
+}
+
+.dark .bg-gray-100,
+.dark .bg-slate-100 {
+  background-color: #1c2230;
+}
+
+/* Page-level white sections */
+.dark section.bg-white,
+.dark div.bg-white {
+  background-color: #0d1117;
+}
+
+/* Text overrides */
+.dark .text-gray-900,
+.dark .text-slate-900 { color: #f1f5f9; }
+
+.dark .text-gray-800,
+.dark .text-slate-800 { color: #e2e8f0; }
+
+.dark .text-gray-700,
+.dark .text-slate-700 { color: #cbd5e1; }
+
+.dark .text-gray-600,
+.dark .text-slate-600 { color: #94a3b8; }
+
+.dark .text-gray-500,
+.dark .text-slate-500 { color: #94a3b8; }
+
+.dark .text-gray-400,
+.dark .text-slate-400 { color: #64748b; }
+
+/* Border overrides */
+.dark .border-gray-100,
+.dark .border-slate-100 { border-color: #21293a; }
+
+.dark .border-gray-200,
+.dark .border-slate-200 { border-color: #2d3748; }
+
+.dark .border-gray-300,
+.dark .border-slate-300 { border-color: #2d3748; }
+
+/* Blue pill / badge backgrounds */
+.dark .bg-blue-50  { background-color: rgba(30, 58, 138, 0.25); }
+.dark .bg-blue-100 { background-color: rgba(30, 58, 138, 0.35); }
+
+/* Gradient hero backgrounds */
+.dark .from-white { --tw-gradient-from: #0d1117; }
+.dark .via-sky-50  { --tw-gradient-via: #0f172a; }
+.dark .via-white   { --tw-gradient-via: #0f172a; }
+.dark .to-blue-100 { --tw-gradient-to: #111827; }
+.dark .to-indigo-50{ --tw-gradient-to: #111827; }
+.dark .from-blue-50 { --tw-gradient-from: #1c2230; }
+.dark .from-slate-50 { --tw-gradient-from: #161b22; }
+.dark .via-blue-50  { --tw-gradient-via: #1a2235; }
+
+/* Gray section backgrounds */
+.dark .bg-gray-100 { background-color: #161b22; }
+
+/* Card shadows in dark */
+.dark .shadow-sm  { box-shadow: 0 1px 8px rgba(0,0,0,0.4); }
+.dark .shadow-md  { box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+.dark .shadow-lg  { box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+.dark .shadow-xl  { box-shadow: 0 12px 40px rgba(0,0,0,0.55); }
+
+/* ── Smooth color transitions ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 180ms;
+  transition-timing-function: ease;
+}
+
+/* Never slow down animations */
+canvas,
+[style*="transform"],
+[style*="opacity"],
+.motion-safe\:animate-none {
+  transition: none !important;
+}
+
+/* ── Input fields in dark ─────────────────────────────────────────────── */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #161b22;
+  border-color: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96,165,250,0.15);
+}

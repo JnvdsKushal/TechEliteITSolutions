@@ -1,0 +1,174 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+@import './theme-variables.css';
+
+/* ── src/index.css  (add / merge into your existing file) ───────────────────
+   TechElite dark-theme token system.
+   All dark-mode overrides live here via CSS custom properties.
+   Tailwind's `dark:` variant is enabled by setting darkMode: 'class' in
+   tailwind.config — see tailwind.config.ts below.
+─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Light tokens (default) ─────────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-base:          #ffffff;
+  --bg-surface:       #f8fafc;
+  --bg-elevated:      #ffffff;
+  --bg-overlay:       rgba(255,255,255,0.85);
+
+  /* Borders */
+  --border-subtle:    #e2e8f0;
+  --border-default:   #cbd5e1;
+  --border-strong:    #94a3b8;
+
+  /* Text */
+  --text-primary:     #0f172a;
+  --text-secondary:   #475569;
+  --text-muted:       #94a3b8;
+  --text-inverted:    #ffffff;
+
+  /* Brand */
+  --brand-50:         #eff6ff;
+  --brand-100:        #dbeafe;
+  --brand-200:        #bfdbfe;
+  --brand-400:        #60a5fa;
+  --brand-500:        #3b82f6;
+  --brand-600:        #2563eb;
+  --brand-700:        #1d4ed8;
+  --brand-900:        #1e3a8a;
+
+  /* Hero gradient */
+  --hero-from:        #ffffff;
+  --hero-via:         #f0f9ff;
+  --hero-to:          #dbeafe;
+
+  /* Card */
+  --card-bg:          #ffffff;
+  --card-shadow:      0 2px 20px rgba(37,99,235,0.06);
+  --card-shadow-hover:0 8px 40px rgba(37,99,235,0.14);
+
+  /* Network dots/lines */
+  --net-dot:          rgba(37,99,235,0.25);
+  --net-line:         rgba(37,99,235,0.18);
+
+  /* Input */
+  --input-bg:         #f8fafc;
+  --input-border:     #e2e8f0;
+  --input-focus:      #3b82f6;
+}
+
+/* ── Dark tokens ─────────────────────────────────────────────────────────── */
+.dark {
+  /* Backgrounds — deep navy-charcoal palette */
+  --bg-base:          #0d1117;
+  --bg-surface:       #161b22;
+  --bg-elevated:      #1c2230;
+  --bg-overlay:       rgba(22,27,34,0.92);
+
+  /* Borders */
+  --border-subtle:    #21293a;
+  --border-default:   #2d3748;
+  --border-strong:    #4a5568;
+
+  /* Text */
+  --text-primary:     #e2e8f0;
+  --text-secondary:   #94a3b8;
+  --text-muted:       #64748b;
+  --text-inverted:    #0d1117;
+
+  /* Brand — slightly brighter for dark bg */
+  --brand-50:         #0f1f3d;
+  --brand-100:        #152844;
+  --brand-200:        #1e3a5c;
+  --brand-400:        #60a5fa;
+  --brand-500:        #3b82f6;
+  --brand-600:        #2563eb;
+  --brand-700:        #1d4ed8;
+  --brand-900:        #93c5fd;
+
+  /* Hero gradient — dark navy */
+  --hero-from:        #0d1117;
+  --hero-via:         #0f172a;
+  --hero-to:          #111827;
+
+  /* Card */
+  --card-bg:          #1c2230;
+  --card-shadow:      0 2px 20px rgba(0,0,0,0.4);
+  --card-shadow-hover:0 8px 40px rgba(0,0,0,0.6);
+
+  /* Network */
+  --net-dot:          rgba(96,165,250,0.35);
+  --net-line:         rgba(96,165,250,0.15);
+
+  /* Input */
+  --input-bg:         #161b22;
+  --input-border:     #2d3748;
+  --input-focus:      #60a5fa;
+}
+
+/* ── Smooth theme transition ─────────────────────────────────────────────── */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+/* But don't slow down explicit animations */
+[class*="animate-"], [class*="motion"] {
+  transition-duration: 0ms !important;
+}
+
+/* ── Base resets using tokens ────────────────────────────────────────────── */
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* ── Utility classes built on tokens ─────────────────────────────────────── */
+
+/* Backgrounds */
+.bg-base      { background-color: var(--bg-base); }
+.bg-surface   { background-color: var(--bg-surface); }
+.bg-elevated  { background-color: var(--bg-elevated); }
+.bg-overlay   { background-color: var(--bg-overlay); }
+
+/* Text */
+.text-base      { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted     { color: var(--text-muted); }
+
+/* Borders */
+.border-subtle  { border-color: var(--border-subtle); }
+.border-default { border-color: var(--border-default); }
+
+/* Cards */
+.card {
+  background-color: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  border-color: var(--border-subtle);
+}
+.card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Hero sections */
+.hero-gradient {
+  background: linear-gradient(135deg, var(--hero-from) 0%, var(--hero-via) 50%, var(--hero-to) 100%);
+}
+
+/* Inputs */
+.themed-input {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+.themed-input:focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  outline: none;
+}
+.themed-input::placeholder {
+  color: var(--text-muted);
+}
+
