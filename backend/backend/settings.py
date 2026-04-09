@@ -131,7 +131,7 @@ DEFAULT_FROM_EMAIL  = f"TechElite IT Solutions <{os.getenv('EMAIL_HOST_USER', ''
 
 # ── Admin emails — both receive every notification ────────────────────────────
 ADMIN_EMAILS = [
-    'Techeliteitsolutions.kphb@gmail.com',
+    'anusreereddy012@gmail.com',
 ]
 
 # ── UltraMsg WhatsApp ──────────────────────────────────────────────────────────

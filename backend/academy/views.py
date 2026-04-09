@@ -3,6 +3,7 @@ SAVE THIS FILE AS: users/views.py
 (the same file where your existing register/login/contact views live)
 """
 
+from time import timezone
 import uuid
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -11,6 +12,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User as DjangoUser
 from .models import Contact
 from .serializers import ContactSerializer
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
 
 # ── Shared in-memory token store ─────────────────────────────────────────────
 # NOTE: This resets on every server restart. For production, store tokens in
@@ -53,6 +57,56 @@ def register(request):
         password=password,
         first_name=name,
     )
+
+    # ── 1. Welcome email to the user ──────────────────────────────────────────
+    try:
+        send_mail(
+            subject="Welcome to TechElite IT Solutions! 🎉",
+            message=f"""Hi {name or email},
+
+Thank you for registering with TechElite IT Solutions!
+
+Your account has been created successfully. You can now log in and explore our courses.
+
+Login here: https://techeliteitsolutions.com/login
+
+If you have any questions, feel free to reach out to us at:
+📧 Techeliteitsolutions.kphb@gmail.com
+
+Best regards,
+Team TechElite IT Solutions
+""",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send welcome email to user: {e}")
+
+    # ── 2. Notification email to admin ────────────────────────────────────────
+    try:
+        send_mail(
+            subject="New User Registration - TechElite IT Solutions",
+            message=f"""Hello Admin,
+
+A new user has registered on TechElite IT Solutions.
+
+Details:
+- Name    : {name or 'Not provided'}
+- Email   : {email}
+- Registered At: {timezone.localtime(user.date_joined).strftime("%d %b %Y, %I:%M %p")} IST
+
+You can view all users in the admin panel.
+
+Regards,
+TechElite System
+""",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=settings.ADMIN_EMAILS,
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send notification email to admin: {e}")
 
     return Response({
         "message": "Registered successfully",
