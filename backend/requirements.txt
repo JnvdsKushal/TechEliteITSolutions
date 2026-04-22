@@ -37,7 +37,6 @@ Django==4.2.26
 django-allauth==65.13.0
 django-cors-headers==4.8.0
 django-csp==4.0
-django-mongoengine==0.5.6
 django-rest-framework-mongoengine==3.4.1
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
@@ -102,7 +101,6 @@ kiwisolver==1.4.9
 MarkupSafe==3.0.3
 matplotlib==3.10.7
 matplotlib-inline==0.1.7
-mongoengine==0.29.1
 msgpack==1.1.1
 multidict==6.6.4
 mysql-connector-python==9.4.0
@@ -134,7 +132,6 @@ pydantic_core==2.33.2
 pydeck==0.9.1
 Pygments==2.19.2
 PyJWT==2.10.1
-pymongo==4.14.1
 PyMuPDF==1.26.6
 pyOpenSSL==25.1.0
 pyparsing==3.2.3
@@ -183,3 +180,4 @@ wcwidth==0.2.13
 websockets==15.0.1
 yarl==1.22.0
 zope.interface==7.2
+setuptools
