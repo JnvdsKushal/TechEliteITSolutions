@@ -6,6 +6,7 @@ Production-ready with Gmail SMTP email notifications.
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
@@ -131,7 +132,7 @@ DEFAULT_FROM_EMAIL  = f"TechElite IT Solutions <{os.getenv('EMAIL_HOST_USER', ''
 
 # ── Admin emails — both receive every notification ────────────────────────────
 ADMIN_EMAILS = [
-    'jnvdskushal@gmail.com',
+    'techeliteitsolutions.kphb@gmail.com',
 ]
 
 # ── UltraMsg WhatsApp ──────────────────────────────────────────────────────────
