@@ -37,7 +37,6 @@ Django==4.2.26
 django-allauth==65.13.0
 django-cors-headers==4.8.0
 django-csp==4.0
-django-rest-framework-mongoengine==3.4.1
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 dj-database-url==0.5.0
@@ -87,7 +86,6 @@ idna==3.10
 imbalanced-learn==0.14.0
 incremental==24.7.2
 ipykernel==6.30.1
-ipython==9.5.0
 ipython_pygments_lexers==1.1.1
 isodate==0.7.2
 jedi==0.19.2
@@ -95,22 +93,15 @@ Jinja2==3.1.6
 joblib==1.5.2
 jsonschema==4.25.1
 jsonschema-specifications==2025.9.1
-jupyter_client==8.6.3
-jupyter_core==5.8.1
 kiwisolver==1.4.9
 MarkupSafe==3.0.3
-matplotlib==3.10.7
 matplotlib-inline==0.1.7
 msgpack==1.1.1
 multidict==6.6.4
-mysql-connector-python==9.4.0
-mysqlclient==2.2.7
 narwhals==2.11.0
 nest-asyncio==1.6.0
-numpy==2.3.3
 oauthlib==3.3.1
 packaging==25.0
-pandas==2.3.2
 parsimonious==0.10.0
 parso==0.8.5
 pillow==11.3.0
@@ -139,7 +130,6 @@ python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.1.1
 pytz==2025.2
-pywin32==311
 pyzmq==27.1.0
 referencing==0.37.0
 regex==2025.11.3
@@ -148,9 +138,7 @@ requests-oauthlib==2.0.0
 rlp==4.1.0
 rpds-py==0.28.0
 rsa==4.9.1
-scikit-learn==1.7.2
 scipy==1.16.2
-seaborn==0.13.2
 service-identity==24.2.0
 simplejwt==2.0.1
 six==1.17.0
@@ -159,7 +147,6 @@ sniffio==1.3.1
 soupsieve==2.8
 sqlparse==0.5.3
 stack-data==0.6.3
-streamlit==1.51.0
 tenacity==9.1.2
 threadpoolctl==3.6.0
 toml==0.10.2
