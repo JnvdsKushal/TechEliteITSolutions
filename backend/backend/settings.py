@@ -82,7 +82,7 @@ else:
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'techelite_db',
             'USER': 'postgres',
-            'PASSWORD': '12345678',
+            'PASSWORD': '6126',
             'HOST': 'localhost',
             'PORT': '5432',
         }
@@ -131,7 +131,7 @@ DEFAULT_FROM_EMAIL  = f"TechElite IT Solutions <{os.getenv('EMAIL_HOST_USER', ''
 
 # ── Admin emails — both receive every notification ────────────────────────────
 ADMIN_EMAILS = [
-    'anusreereddy012@gmail.com',
+    'jnvdskushal@gmail.com',
 ]
 
 # ── UltraMsg WhatsApp ──────────────────────────────────────────────────────────
