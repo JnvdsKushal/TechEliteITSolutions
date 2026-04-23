@@ -190,10 +190,11 @@ export function Login() {
     setIsLoading(true);
 
     try {
-      // ── FIX 1: Correct endpoint — was /api/login/, now /api/auth/login/ ──
       const response = await axios.post("/api/auth/login/", {
         email: formData.email,
         password: formData.password,
+      }, {
+        headers: { "Content-Type": "application/json" },
       });
 
       const { token, user } = response.data;
@@ -210,7 +211,6 @@ export function Login() {
         response.data.is_staff === true ||
         response.data.is_admin === true;
 
-      // ── FIX 2: Redirect to /profile for regular users (was going to /) ──
       if (isAdmin) {
         window.location.href = "/admin";
       } else {
@@ -232,7 +232,7 @@ export function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8000/api/auth/google/";
+    window.location.href = "https://techeliteitsolutions-1.onrender.com/api/auth/google/";
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

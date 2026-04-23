@@ -170,41 +170,38 @@ export function Register() {
   const [isTyping, setIsTyping] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (formData.password !== formData.confirmPassword) {
-    alert("Passwords do not match!");
-    return;
-  }
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
 
-  try {
-    const response = await axios.post(
-      "http://127.0.0.1:8000/api/register/",
-      {
-        name: formData.firstName + " " + formData.lastName,
-        email: formData.email,
-        password: formData.password,
-      }
-    );
+    try {
+      const response = await axios.post(
+        "/api/register/",
+        {
+          name: formData.firstName + " " + formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
-    console.log("Registration successful:", response.data);
+      console.log("Registration successful:", response.data);
+      alert("Registration successful!");
+      window.location.href = "/login";
 
-    alert("Registration successful!");
-
-    // redirect to login page
-    window.location.href = "/login";
-
-  } catch (error) {
-    console.error("Registration error:", error);
-    alert("Registration failed. Try again.");
-  }
-};
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("Registration failed. Try again.");
+    }
+  };
 
   const handleGoogleSignup = () => {
-    // TODO: Implement Google OAuth
-    console.log("Google signup clicked");
-    // API endpoint: GET /api/auth/google/
-    window.location.href = "http://localhost:8000/api/auth/google/";
+    window.location.href = "https://techeliteitsolutions-1.onrender.com/api/auth/google/";
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -369,14 +366,15 @@ export function Register() {
               </label>
             </div>
 
-            {/* Submit — dark solid matching reference */}
+            {/* Submit */}
             <motion.button type="submit" whileHover={{ scale:1.015, y:-1 }} whileTap={{ scale:0.985 }}
               className="w-full h-12 rounded-xl font-semibold text-white text-sm transition-all duration-200"
-style={{
-  background: "#ffffff",
-  color: "#000",
-  border: "1px solid rgba(0,0,0,0.1)"
-}}              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#1c1c1c"; }}
+              style={{
+                background: "#ffffff",
+                color: "#000",
+                border: "1px solid rgba(0,0,0,0.1)"
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#1c1c1c"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#111111"; }}>
               Create Account
             </motion.button>

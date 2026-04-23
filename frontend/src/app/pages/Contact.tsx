@@ -147,7 +147,7 @@ export function Contact() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/contact/', {
+      const res = await fetch('/api/auth/contact/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: form.name, email: form.email, message: form.message }),
@@ -401,7 +401,6 @@ export function Contact() {
           </div>
 
           {/* ── BRANCH TABS ─────────────────────────────────────────────── */}
-          {/* role="tablist" + aria-* for full keyboard accessibility        */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 
             {/* Tab buttons */}
@@ -438,14 +437,12 @@ export function Contact() {
                     }
                   `}
                 >
-                  {/* Active indicator dot */}
                   <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all duration-300 ${
                     activeLocation === idx
                       ? 'bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)]'
                       : 'bg-gray-300 dark:bg-slate-600'
                   }`} />
                   {loc.label}
-                  {/* Live pulse on active */}
                   {activeLocation === idx && (
                     <span className="ml-0.5 flex items-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse" />
@@ -495,14 +492,12 @@ export function Contact() {
           aria-labelledby={`tab-${activeLocation}`}
           className="relative w-full overflow-hidden mx-auto max-w-6xl px-6 lg:px-10"
         >
-          {/* Outer frame with rounded top corners */}
           <div
             className="relative w-full overflow-hidden
               border border-blue-100/40 dark:border-[#2d3748]
               shadow-[0_8px_40px_rgba(80,100,180,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.5)]"
             style={{ height: '420px', borderRadius: '20px 20px 0 0', borderBottom: 'none' }}
           >
-            {/* AnimatePresence so old map fades out before new fades in */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeLocation}
