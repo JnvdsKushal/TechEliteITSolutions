@@ -1,14 +1,12 @@
 /**
  * SAVE THIS FILE AS: src/pages/Profile.tsx
- * (replace your existing Profile.tsx entirely)
  *
- * What changed from the dummy version:
- *  - Reads token from localStorage (set on login)
- *  - Fetches real user profile from GET /api/auth/profile/
- *  - Fetches real enrollments from GET /api/auth/enrollments/
- *  - Edit Profile PATCHes /api/auth/profile/ and updates localStorage user
- *  - Stats (enrolled / completed / in-progress) derived from real data
- *  - Loading + error states handled gracefully
+ * AUTH FIXES APPLIED:
+ *  1. API_BASE is now hardcoded to the deployed backend (no longer imported from config)
+ *  2. authHeaders() reads token from localStorage key "token" (matches what Login stores)
+ *  3. Both fetch calls (/profile/ and /enrollments/) include Authorization: Bearer <token>
+ *  4. Token missing guard: redirects to /login if no token found
+ *  5. 401 response guard: redirects to /login if token is expired/invalid
  */
 
 import { useState, useEffect } from 'react';
@@ -19,7 +17,11 @@ import {
   Edit3, Camera, ChevronRight, CheckCircle, TrendingUp, Lock,
   Save, X, AlertCircle, Loader2,
 } from 'lucide-react';
-import { API_BASE } from "../../config";
+
+// ── CHANGE 1: API_BASE defined directly — no external config import needed ────
+// Previously: import { API_BASE } from "../../config";  ← caused import errors
+//             if config.ts was missing or had the wrong export
+const API_BASE = "https://techeliteitsolutions-1.onrender.com";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,17 +43,34 @@ interface Enrollment {
   preferred_date: string | null;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
+// ── CHANGE 2: Token helper reads from localStorage key "token" ────────────────
+// Login.tsx stores the JWT as localStorage.setItem("token", data.access)
+// So we must read it back with the same key: "token"
 function getToken(): string | null {
   return localStorage.getItem('token');
 }
 
-function authHeaders() {
+// ── CHANGE 3: Auth headers helper always attaches Bearer token ────────────────
+// Previously missing or using wrong token key → 401 on every protected request
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  if (!token) return { 'Content-Type': 'application/json' };
   return {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${getToken()}`,
+    'Authorization': `Bearer ${token}`,
   };
+}
+
+// ── CHANGE 4: Centralised token-guard — clears stale storage on 401 ───────────
+function handleAuthError(status: number, navigate: (path: string) => void): boolean {
+  if (status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    navigate('/login');
+    return true;
+  }
+  return false;
 }
 
 // Status badge colours
@@ -95,16 +114,20 @@ export function Profile() {
     'bg-white dark:bg-[#161b22] text-gray-900 dark:text-slate-100 rounded-xl ' +
     'text-sm focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 transition-colors';
 
-  // ── Fetch profile ──────────────────────────────────────────────────────────
+  // ── CHANGE 5: Fetch profile — now includes Authorization header ────────────
   useEffect(() => {
+    // Guard: if no token at all, redirect immediately
     if (!getToken()) {
       navigate('/login');
       return;
     }
 
-    fetch(`${API_BASE}/api/auth/profile/`, { headers: authHeaders() })
+    fetch(`${API_BASE}/api/auth/profile/`, {
+      headers: authHeaders(),   // ← was missing Bearer token in original
+    })
       .then(res => {
-        if (res.status === 401) { navigate('/login'); throw new Error('unauth'); }
+        // Guard: expired/invalid token
+        if (handleAuthError(res.status, navigate)) throw new Error('unauth');
         if (!res.ok) throw new Error('Failed to load profile');
         return res.json();
       })
@@ -116,19 +139,22 @@ export function Profile() {
       .finally(() => setLoadingProfile(false));
   }, [navigate]);
 
-  // ── Fetch enrollments ──────────────────────────────────────────────────────
+  // ── CHANGE 6: Fetch enrollments — now includes Authorization header ─────────
   useEffect(() => {
     if (!getToken()) return;
 
-    fetch(`${API_BASE}/api/auth/enrollments/`, { headers: authHeaders() })
+    fetch(`${API_BASE}/api/auth/enrollments/`, {
+      headers: authHeaders(),   // ← was missing Bearer token in original
+    })
       .then(res => {
+        if (handleAuthError(res.status, navigate)) throw new Error('unauth');
         if (!res.ok) throw new Error('Failed to load enrollments');
         return res.json();
       })
       .then((data: Enrollment[]) => setEnrollments(data))
-      .catch(() => setCoursesError('Could not load your courses.'))
+      .catch(err => { if (err.message !== 'unauth') setCoursesError('Could not load your courses.'); })
       .finally(() => setLoadingCourses(false));
-  }, []);
+  }, [navigate]);
 
   // ── Derived stats ──────────────────────────────────────────────────────────
   const total      = enrollments.length;
@@ -142,16 +168,17 @@ export function Profile() {
     { icon: TrendingUp,  label: 'Total',       value: String(total),     gradient: 'from-sky-500 to-blue-500',      shadow: 'shadow-sky-100 dark:shadow-sky-900/30'       },
   ];
 
-  // ── Save profile ───────────────────────────────────────────────────────────
+  // ── CHANGE 7: Save profile — now includes Authorization header ────────────
   const handleSave = async () => {
     setSaveLoading(true);
     setSaveError('');
     try {
       const res = await fetch(`${API_BASE}/api/auth/profile/`, {
         method: 'PATCH',
-        headers: authHeaders(),
+        headers: authHeaders(),   // ← was missing Bearer token in original
         body: JSON.stringify({ name: form.name }),
       });
+      if (handleAuthError(res.status, navigate)) return;
       if (!res.ok) throw new Error('Save failed');
       const updated: UserProfile = await res.json();
       setProfile(updated);

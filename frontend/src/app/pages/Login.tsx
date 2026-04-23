@@ -177,6 +177,11 @@ function CharacterPanel({ isTyping, password, showPassword }: { isTyping: boolea
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CHANGE 1: Backend base URL defined once here (matches your deployed backend)
+// ─────────────────────────────────────────────────────────────────────────────
+const API_BASE = "https://techeliteitsolutions-1.onrender.com";
+
 export function Login() {
   const [formData, setFormData] = useState({ email: "", password: "", rememberMe: false });
   const [showPassword, setShowPassword] = useState(false);
@@ -190,26 +195,47 @@ export function Login() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("/api/auth/login/", {
+      const response = await axios.post(`${API_BASE}/api/auth/login/`, {
         email: formData.email,
         password: formData.password,
       }, {
         headers: { "Content-Type": "application/json" },
       });
 
-      const { token, user } = response.data;
+      const data = response.data;
 
-      // Save token and user info to localStorage
-      localStorage.setItem("token", token);
+      // ── CHANGE 2: Store the JWT access token ──────────────────────────────
+      // Django SimpleJWT returns { access, refresh, user } — NOT { token, user }
+      // Previously: localStorage.setItem("token", token)  ← was data.token (undefined)
+      // Fixed:      localStorage.setItem("token", data.access) ← correct key
+      const accessToken = data.access || data.token; // support both naming conventions
+      if (!accessToken) {
+        throw new Error("No access token received from server");
+      }
+      localStorage.setItem("token", accessToken);
+
+      // ── CHANGE 3: Also store refresh token if present ─────────────────────
+      if (data.refresh) {
+        localStorage.setItem("refresh_token", data.refresh);
+      }
+
+      // ── CHANGE 4: Store user object ───────────────────────────────────────
+      // data.user may be nested or flat depending on your backend serializer
+      const user = data.user ?? {
+        email: formData.email,
+        is_staff: data.is_staff,
+        is_admin: data.is_admin,
+        role: data.role,
+      };
       localStorage.setItem("user", JSON.stringify(user));
 
-      // ── Admin check ──────────────────────────────────────────────────────
+      // ── Admin check ───────────────────────────────────────────────────────
       const isAdmin =
         user?.is_staff === true ||
         user?.is_admin === true ||
         user?.role === "admin" ||
-        response.data.is_staff === true ||
-        response.data.is_admin === true;
+        data.is_staff === true ||
+        data.is_admin === true;
 
       if (isAdmin) {
         window.location.href = "/admin";
@@ -224,6 +250,7 @@ export function Login() {
         err.response?.data?.message ||
         err.response?.data?.error ||
         err.response?.data?.non_field_errors?.[0] ||
+        err.message ||
         "Invalid email or password";
       setError(msg);
     } finally {
@@ -232,7 +259,7 @@ export function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://techeliteitsolutions-1.onrender.com/api/auth/google/";
+    window.location.href = `${API_BASE}/api/auth/google/`;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
