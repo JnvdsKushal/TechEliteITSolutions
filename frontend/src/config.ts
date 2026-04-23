@@ -1,0 +1,1 @@
+export const API_BASE = "https://techeliteitsolutions-1.onrender.com";

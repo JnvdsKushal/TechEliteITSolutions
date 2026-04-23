@@ -19,6 +19,7 @@ import {
   Edit3, Camera, ChevronRight, CheckCircle, TrendingUp, Lock,
   Save, X, AlertCircle, Loader2,
 } from 'lucide-react';
+import { API_BASE } from "../../config";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -101,7 +102,7 @@ export function Profile() {
       return;
     }
 
-    fetch('/api/auth/profile/', { headers: authHeaders() })
+    fetch(`${API_BASE}/api/auth/profile/`, { headers: authHeaders() })
       .then(res => {
         if (res.status === 401) { navigate('/login'); throw new Error('unauth'); }
         if (!res.ok) throw new Error('Failed to load profile');
@@ -119,7 +120,7 @@ export function Profile() {
   useEffect(() => {
     if (!getToken()) return;
 
-    fetch('/api/auth/enrollments/', { headers: authHeaders() })
+    fetch(`${API_BASE}/api/auth/enrollments/`, { headers: authHeaders() })
       .then(res => {
         if (!res.ok) throw new Error('Failed to load enrollments');
         return res.json();
@@ -146,7 +147,7 @@ export function Profile() {
     setSaveLoading(true);
     setSaveError('');
     try {
-      const res = await fetch('/api/auth/profile/', {
+      const res = await fetch(`${API_BASE}/api/auth/profile/`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({ name: form.name }),
