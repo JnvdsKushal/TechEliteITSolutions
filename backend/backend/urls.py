@@ -9,7 +9,7 @@ urlpatterns = [
     path('', home),  # root route
     path('admin/', admin.site.urls),
 
-    path('courses/', include('courses.urls')),
+    path('', include('courses.urls')),
     path('academy/', include('academy.urls')),
     path('api/announcements/', include('adminpanel.urls')),
 ]
