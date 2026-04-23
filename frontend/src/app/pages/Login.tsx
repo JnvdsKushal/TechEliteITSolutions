@@ -203,6 +203,7 @@ export function Login() {
       });
 
       const data = response.data;
+      console.log("LOGIN RESPONSE:", data);
 
       // ── CHANGE 2: Store the JWT access token ──────────────────────────────
       // Django SimpleJWT returns { access, refresh, user } — NOT { token, user }
