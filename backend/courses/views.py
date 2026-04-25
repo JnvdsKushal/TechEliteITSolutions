@@ -68,8 +68,12 @@ def login(request):
     if not email or not password:
         return Response({"error": "Email and password required"}, status=400)
 
-    user = authenticate(username=email, password=password)
-    if user is None:
+    try:
+        user = DjangoUser.objects.get(email=email)
+    except DjangoUser.DoesNotExist:
+        return Response({"error": "Invalid credentials"}, status=401)
+
+    if not user.check_password(password):
         return Response({"error": "Invalid credentials"}, status=401)
 
     AuthToken.objects.filter(user=user).delete()
