@@ -58,40 +58,22 @@ def register(request):
         "user": {"id": user.id, "name": user.first_name, "email": user.email}
     }, status=201)
 
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-    email    = request.data.get('email')
+    email = request.data.get('email')
     password = request.data.get('password')
 
-    if not email or not password:
-        return Response({"error": "Email and password required"}, status=400)
-
+    # DEBUG START
     try:
         user = DjangoUser.objects.get(email=email)
+        return Response({
+            "debug": "USER_FOUND",
+            "email_in_db": user.email,
+            "password_check": user.check_password(password)
+        })
     except DjangoUser.DoesNotExist:
-        return Response({"error": "Invalid credentials"}, status=401)
-
-    if not user.check_password(password):
-        return Response({"error": "Invalid credentials"}, status=401)
-
-    AuthToken.objects.filter(user=user).delete()
-    token = str(uuid.uuid4())
-    AuthToken.objects.create(user=user, token=token)
-
-    return Response({
-        "token": token,
-        "user": {
-            "id":           user.id,
-            "name":         user.get_full_name() or user.first_name or user.username,
-            "email":        user.email,
-            "phone":        "",
-            "is_staff":     user.is_staff,
-            "is_admin":     user.is_staff,
-            "is_superuser": user.is_superuser,
-        }
-    })
+        return Response({"debug": "USER_NOT_FOUND"})
 
 
 @api_view(['POST'])
