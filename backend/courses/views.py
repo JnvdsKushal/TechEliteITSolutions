@@ -8,7 +8,6 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User as DjangoUser
 
 from .models import Course, Booking, ContactMessage, AuthToken
@@ -44,7 +43,9 @@ def register(request):
     if not email or not password:
         return Response({"error": "Email and password are required"}, status=400)
 
-    if DjangoUser.objects.filter(username=email).exists():
+    email = email.strip().lower()
+
+    if DjangoUser.objects.filter(email=email).exists():
         return Response({"error": "User already exists"}, status=400)
 
     user = DjangoUser.objects.create_user(
@@ -58,22 +59,42 @@ def register(request):
         "user": {"id": user.id, "name": user.first_name, "email": user.email}
     }, status=201)
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-    email = request.data.get('email')
+    email    = request.data.get('email')
     password = request.data.get('password')
 
-    # DEBUG START
+    if not email or not password:
+        return Response({"error": "Email and password required"}, status=400)
+
+    email = email.strip().lower()
+
     try:
-        user = DjangoUser.objects.get(email=email)
-        return Response({
-            "debug": "USER_FOUND",
-            "email_in_db": user.email,
-            "password_check": user.check_password(password)
-        })
+        user = DjangoUser.objects.get(email__iexact=email)
     except DjangoUser.DoesNotExist:
-        return Response({"debug": "USER_NOT_FOUND"})
+        return Response({"error": "Invalid credentials"}, status=401)
+
+    if not user.check_password(password):
+        return Response({"error": "Invalid credentials"}, status=401)
+
+    AuthToken.objects.filter(user=user).delete()
+    token = str(uuid.uuid4())
+    AuthToken.objects.create(user=user, token=token)
+
+    return Response({
+        "token": token,
+        "user": {
+            "id":           user.id,
+            "name":         user.get_full_name() or user.first_name or user.username,
+            "email":        user.email,
+            "phone":        "",
+            "is_staff":     user.is_staff,
+            "is_admin":     user.is_staff,
+            "is_superuser": user.is_superuser,
+        }
+    })
 
 
 @api_view(['POST'])
@@ -296,7 +317,6 @@ class BookingCreateView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         obj = serializer.save()
 
-        # ── Booking type label ────────────────────────────────────────────
         booking_labels = {
             'demo':         'Free Demo Class',
             'consultation': 'Free Consultation',
@@ -304,10 +324,6 @@ class BookingCreateView(generics.CreateAPIView):
         }
         label = booking_labels.get(obj.booking_type, obj.booking_type.title())
 
-        # ── Course name ───────────────────────────────────────────────────
-        # Priority 1: course FK on the saved object
-        # Priority 2: course_title sent directly from the frontend form
-        # Priority 3: fallback
         if obj.course:
             course_name = obj.course.title
         else:
@@ -317,10 +333,6 @@ class BookingCreateView(generics.CreateAPIView):
                 or 'Not specified'
             )
 
-        # ── Mode ──────────────────────────────────────────────────────────
-        # Priority 1: course FK course_type
-        # Priority 2: mode field sent directly from the frontend form
-        # Priority 3: fallback
         if obj.course:
             raw_mode = obj.course.course_type
         else:
@@ -330,23 +342,19 @@ class BookingCreateView(generics.CreateAPIView):
                 or 'Not specified'
             )
 
-        # Capitalise cleanly: "online" → "Online", "offline" → "Offline"
         mode = raw_mode.title() if raw_mode != 'Not specified' else raw_mode
 
-        # ── Preferred date ────────────────────────────────────────────────
         if obj.preferred_date:
             preferred = obj.preferred_date.strftime("%d %b %Y")
         else:
             preferred = request.data.get('date') or 'Not specified'
 
-        # ── Preferred time ────────────────────────────────────────────────
         preferred_time = (
             request.data.get('preferred_time')
             or request.data.get('time')
             or 'Not specified'
         )
 
-        # ── Send email ────────────────────────────────────────────────────
         send_booking_email({
             "booking_type":   label,
             "name":           obj.name,
