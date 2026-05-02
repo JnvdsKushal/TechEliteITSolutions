@@ -1,12 +1,9 @@
 """
 courses/email_helper.py
-
-Reusable email notification utility for TechElite.
-Sends beautifully formatted HTML emails to all admins
-whenever a booking or contact form is submitted.
 """
 
 import logging
+import traceback
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
@@ -14,36 +11,38 @@ logger = logging.getLogger(__name__)
 
 
 def _get_admin_emails():
-    """
-    Returns list of admin emails from settings.
-    Supports both ADMIN_EMAILS (list) and ADMIN_EMAIL (single string).
-    """
-    if hasattr(settings, 'ADMIN_EMAILS'):
+    if hasattr(settings, 'ADMIN_EMAILS') and settings.ADMIN_EMAILS:
         return settings.ADMIN_EMAILS
-    if hasattr(settings, 'ADMIN_EMAIL'):
+    if hasattr(settings, 'ADMIN_EMAIL') and settings.ADMIN_EMAIL:
         return [settings.ADMIN_EMAIL]
     return []
 
 
-# ── Booking Email ─────────────────────────────────────────────────────────────
+def _diagnose_email_config():
+    user = getattr(settings, 'EMAIL_HOST_USER', '')
+    password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
+    host = getattr(settings, 'EMAIL_HOST', '')
+    port = getattr(settings, 'EMAIL_PORT', '')
+    use_tls = getattr(settings, 'EMAIL_USE_TLS', '')
+    backend = getattr(settings, 'EMAIL_BACKEND', '')
+    logger.debug(
+        "[Email:Config] BACKEND=%s HOST=%s PORT=%s TLS=%s USER=%s PASSWORD_SET=%s",
+        backend, host, port, use_tls, user, bool(password),
+    )
+
 
 def send_booking_email(data: dict) -> bool:
-    """
-    Send a booking notification email to all admins.
-
-    Expected keys in data:
-        booking_type, name, email, phone, course, mode,
-        preferred_date, preferred_time, message, received_at
-    """
+    _diagnose_email_config()
     try:
         recipients = _get_admin_emails()
         if not recipients:
-            logger.warning("[Email] No admin emails configured in settings.")
-            return False
+            logger.error("[Email:Booking] FAILED — No admin emails configured in settings.ADMIN_EMAILS")
+            raise RuntimeError("No admin email recipients configured.")
+
+        logger.info("[Email:Booking] Preparing to send to %s for student '%s'", recipients, data.get('name'))
 
         subject = f"🔔 New Booking — {data.get('booking_type', 'Demo')} | TechElite"
 
-        # ── Plain text fallback ───────────────────────────────────────────
         text_body = f"""
 New Booking Request — TechElite IT Solutions
 
@@ -68,7 +67,6 @@ Received At : {data.get('received_at', 'N/A')}
 Please login to the admin panel to confirm or cancel this booking.
         """.strip()
 
-        # ── HTML email ────────────────────────────────────────────────────
         html_body = f"""
 <!DOCTYPE html>
 <html>
@@ -215,24 +213,16 @@ Please login to the admin panel to confirm or cancel this booking.
 </head>
 <body>
   <div class="container">
-
-    <!-- Header -->
     <div class="header">
       <span class="header-icon">🔔</span>
       <h1>New Booking Request</h1>
       <p>TechElite IT Solutions</p>
       <span class="badge">{data.get('booking_type', 'Demo Class')}</span>
     </div>
-
-    <!-- Body -->
     <div class="body">
-
-      <!-- Alert -->
       <div class="alert-box">
         ⚡ A new booking has been submitted — please respond promptly!
       </div>
-
-      <!-- Course Details -->
       <div class="section">
         <div class="section-title">🎯 Course Details</div>
         <div class="row">
@@ -252,8 +242,6 @@ Please login to the admin panel to confirm or cancel this booking.
           <span class="value">{data.get('preferred_time', 'Not specified')}</span>
         </div>
       </div>
-
-      <!-- Student Details -->
       <div class="section">
         <div class="section-title">👤 Student Details</div>
         <div class="row">
@@ -269,32 +257,23 @@ Please login to the admin panel to confirm or cancel this booking.
           <span class="value">{data.get('phone', 'N/A')}</span>
         </div>
       </div>
-
-      <!-- Message -->
       <div class="section">
         <div class="section-title">💬 Message from Student</div>
         <div class="message-box">
           {data.get('message', 'No additional notes provided.')}
         </div>
       </div>
-
-      <!-- CTA -->
       <div class="cta">
         <a href="https://techelite-backend.onrender.com/admin/">
           Open Admin Panel →
         </a>
       </div>
-
       <p class="received">🕐 Received at {data.get('received_at', 'N/A')}</p>
-
     </div>
-
-    <!-- Footer -->
     <div class="footer">
       © 2026 TechElite IT Solutions<br>
       This is an automated notification. Do not reply to this email.
     </div>
-
   </div>
 </body>
 </html>
@@ -309,28 +288,24 @@ Please login to the admin panel to confirm or cancel this booking.
         email.attach_alternative(html_body, "text/html")
         email.send(fail_silently=False)
 
-        logger.info(f"[Email] Booking notification sent to {recipients} for {data.get('name')}")
+        logger.info("[Email:Booking] SUCCESS — sent to %s for '%s'", recipients, data.get('name'))
         return True
 
     except Exception as e:
-        logger.error(f"[Email] Failed to send booking email: {e}")
-        return False
+        logger.error("[Email:Booking] FAILED — %s", str(e))
+        logger.error("[Email:Booking] Traceback:\n%s", traceback.format_exc())
+        raise
 
-
-# ── Contact Email ─────────────────────────────────────────────────────────────
 
 def send_contact_email(data: dict) -> bool:
-    """
-    Send a contact form notification email to all admins.
-
-    Expected keys in data:
-        name, email, phone, subject, message, received_at
-    """
+    _diagnose_email_config()
     try:
         recipients = _get_admin_emails()
         if not recipients:
-            logger.warning("[Email] No admin emails configured in settings.")
-            return False
+            logger.error("[Email:Contact] FAILED — No admin emails configured in settings.ADMIN_EMAILS")
+            raise RuntimeError("No admin email recipients configured.")
+
+        logger.info("[Email:Contact] Preparing to send to %s for '%s'", recipients, data.get('name'))
 
         subject = f"📬 New Contact — {data.get('subject', 'General Inquiry')} | TechElite"
 
@@ -457,15 +432,12 @@ Received At : {data.get('received_at', 'N/A')}
 </head>
 <body>
   <div class="container">
-
     <div class="header">
       <span class="header-icon">📬</span>
       <h1>New Contact Message</h1>
       <p>TechElite IT Solutions</p>
     </div>
-
     <div class="body">
-
       <div class="section">
         <div class="section-title">👤 Sender Details</div>
         <div class="row">
@@ -485,23 +457,18 @@ Received At : {data.get('received_at', 'N/A')}
           <span class="value">{data.get('subject', 'N/A')}</span>
         </div>
       </div>
-
       <div class="section">
         <div class="section-title">💬 Message</div>
         <div class="message-box">
           {data.get('message', 'No message provided.')}
         </div>
       </div>
-
       <p class="received">🕐 Received at {data.get('received_at', 'N/A')}</p>
-
     </div>
-
     <div class="footer">
       © 2026 TechElite IT Solutions<br>
       This is an automated notification. Do not reply to this email.
     </div>
-
   </div>
 </body>
 </html>
@@ -516,9 +483,10 @@ Received At : {data.get('received_at', 'N/A')}
         email.attach_alternative(html_body, "text/html")
         email.send(fail_silently=False)
 
-        logger.info(f"[Email] Contact notification sent to {recipients} for {data.get('name')}")
+        logger.info("[Email:Contact] SUCCESS — sent to %s for '%s'", recipients, data.get('name'))
         return True
 
     except Exception as e:
-        logger.error(f"[Email] Failed to send contact email: {e}")
-        return False
+        logger.error("[Email:Contact] FAILED — %s", str(e))
+        logger.error("[Email:Contact] Traceback:\n%s", traceback.format_exc())
+        raise

@@ -3,12 +3,16 @@ courses/views.py
 """
 
 import uuid
+import traceback
+import logging
 from datetime import datetime
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User as DjangoUser
+from django.core.mail import send_mail
+from django.conf import settings
 
 from .models import Course, Booking, ContactMessage, AuthToken
 from .serializers import (
@@ -16,6 +20,8 @@ from .serializers import (
     BookingSerializer,
 )
 from .email_helper import send_booking_email, send_contact_email
+
+logger = logging.getLogger(__name__)
 
 
 # ── Token helpers ─────────────────────────────────────────────────────────────
@@ -188,9 +194,13 @@ def my_enrollments(request):
 def contact(request):
     from .serializers import ContactMessageSerializer
     serializer = ContactMessageSerializer(data=request.data)
-    if serializer.is_valid():
-        obj = serializer.save()
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    obj = serializer.save()
+    logger.info("[Contact] Saved contact message from '%s' <%s>", obj.name, obj.email)
+
+    try:
         send_contact_email({
             "name":        obj.name,
             "email":       obj.email,
@@ -199,9 +209,81 @@ def contact(request):
             "message":     obj.message,
             "received_at": datetime.now().strftime("%d %b %Y, %I:%M %p"),
         })
+    except Exception as e:
+        logger.error("[Contact] Email delivery failed for '%s': %s", obj.name, str(e))
+        logger.error("[Contact] Traceback:\n%s", traceback.format_exc())
+        return Response(
+            {"error": "Your message was saved but the email notification failed. Please contact support."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# ── Test Email ────────────────────────────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def test_email(request):
+    logger.info("[TestEmail] Endpoint hit — attempting SMTP connection")
+    logger.info(
+        "[TestEmail] Config: HOST=%s PORT=%s TLS=%s USER=%s PASSWORD_SET=%s",
+        settings.EMAIL_HOST,
+        settings.EMAIL_PORT,
+        settings.EMAIL_USE_TLS,
+        settings.EMAIL_HOST_USER,
+        bool(settings.EMAIL_HOST_PASSWORD),
+    )
+
+    recipients = []
+    if hasattr(settings, 'ADMIN_EMAILS') and settings.ADMIN_EMAILS:
+        recipients = settings.ADMIN_EMAILS
+    elif hasattr(settings, 'ADMIN_EMAIL') and settings.ADMIN_EMAIL:
+        recipients = [settings.ADMIN_EMAIL]
+
+    if not recipients:
+        logger.error("[TestEmail] No recipients configured.")
+        return Response(
+            {"error": "No ADMIN_EMAILS configured in settings."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    try:
+        send_mail(
+            subject="✅ TechElite Test Email — SMTP Working",
+            message=(
+                "This is a test email sent from the /test-email/ endpoint.\n\n"
+                f"Timestamp : {datetime.now().strftime('%d %b %Y, %I:%M %p')}\n"
+                f"From      : {settings.DEFAULT_FROM_EMAIL}\n"
+                f"To        : {', '.join(recipients)}\n\n"
+                "If you received this, Gmail SMTP is configured correctly on Render."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=recipients,
+            fail_silently=False,
+        )
+        logger.info("[TestEmail] SUCCESS — test email delivered to %s", recipients)
+        return Response({
+            "status":     "success",
+            "message":    f"Test email sent to {', '.join(recipients)}",
+            "from":       settings.DEFAULT_FROM_EMAIL,
+            "smtp_host":  settings.EMAIL_HOST,
+            "smtp_port":  settings.EMAIL_PORT,
+            "tls":        settings.EMAIL_USE_TLS,
+            "user":       settings.EMAIL_HOST_USER,
+            "timestamp":  datetime.now().strftime("%d %b %Y, %I:%M %p"),
+        })
+    except Exception as e:
+        logger.error("[TestEmail] FAILED — %s", str(e))
+        logger.error("[TestEmail] Traceback:\n%s", traceback.format_exc())
+        return Response(
+            {
+                "status":  "error",
+                "message": str(e),
+                "detail":  traceback.format_exc(),
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 # ── Admin: Enrollments ────────────────────────────────────────────────────────
@@ -355,18 +437,26 @@ class BookingCreateView(generics.CreateAPIView):
             or 'Not specified'
         )
 
-        send_booking_email({
-            "booking_type":   label,
-            "name":           obj.name,
-            "email":          obj.email,
-            "phone":          obj.phone,
-            "course":         course_name,
-            "mode":           mode,
-            "preferred_date": preferred,
-            "preferred_time": preferred_time,
-            "message":        obj.message or "No additional notes",
-            "received_at":    datetime.now().strftime("%d %b %Y, %I:%M %p"),
-        })
+        try:
+            send_booking_email({
+                "booking_type":   label,
+                "name":           obj.name,
+                "email":          obj.email,
+                "phone":          obj.phone,
+                "course":         course_name,
+                "mode":           mode,
+                "preferred_date": preferred,
+                "preferred_time": preferred_time,
+                "message":        obj.message or "No additional notes",
+                "received_at":    datetime.now().strftime("%d %b %Y, %I:%M %p"),
+            })
+        except Exception as e:
+            logger.error("[Booking] Email delivery failed for '%s': %s", obj.name, str(e))
+            logger.error("[Booking] Traceback:\n%s", traceback.format_exc())
+            return Response(
+                {"error": "Booking was saved but the email notification failed. Please contact support."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return Response(
             {'message': 'Booking submitted successfully!', 'data': serializer.data},

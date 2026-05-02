@@ -65,11 +65,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ── Database ───────────────────────────────────────────────────────────────────
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    import dj_database_url
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -101,41 +99,74 @@ TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
-# ── Static files ───────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-# ── Logging ────────────────────────────────────────────────────────────────────
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} — {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
-        'console': {'class': 'logging.StreamHandler'},
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
+        'level': 'DEBUG',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'courses': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }
 
-# ── Gmail SMTP Email ───────────────────────────────────────────────────────────
+_email_user = os.getenv('EMAIL_HOST_USER', '').strip()
+_email_pass = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+
+if not _email_user:
+    raise ValueError(
+        "EMAIL_HOST_USER environment variable is not set or empty. "
+        "Add it to your Render environment variables."
+    )
+
+if not _email_pass:
+    raise ValueError(
+        "EMAIL_HOST_PASSWORD environment variable is not set or empty. "
+        "Add your Gmail App Password to Render environment variables."
+    )
+
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'
 EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
-EMAIL_HOST_USER     = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL  = f"TechElite IT Solutions <{os.getenv('EMAIL_HOST_USER', '')}>"
+EMAIL_USE_SSL       = False
+EMAIL_HOST_USER     = _email_user
+EMAIL_HOST_PASSWORD = _email_pass
+EMAIL_TIMEOUT       = 30
+DEFAULT_FROM_EMAIL  = f"TechElite IT Solutions <{_email_user}>"
 
-# ── Admin emails — both receive every notification ────────────────────────────
 ADMIN_EMAILS = [
     'techeliteitsolutions.kphb@gmail.com',
 ]
 
-# ── UltraMsg WhatsApp ──────────────────────────────────────────────────────────
 ULTRAMSG_INSTANCE = os.getenv('ULTRAMSG_INSTANCE', '')
 ULTRAMSG_TOKEN    = os.getenv('ULTRAMSG_TOKEN', '')
 ULTRAMSG_TO       = os.getenv('ULTRAMSG_TO', '')
