@@ -4,8 +4,9 @@ courses/email_helper.py
 
 import logging
 import traceback
-from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, To, From, Subject, HtmlContent, Content, MimeType
 
 logger = logging.getLogger(__name__)
 
@@ -18,21 +19,51 @@ def _get_admin_emails():
     return []
 
 
-def _diagnose_email_config():
-    user = getattr(settings, 'EMAIL_HOST_USER', '')
-    password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
-    host = getattr(settings, 'EMAIL_HOST', '')
-    port = getattr(settings, 'EMAIL_PORT', '')
-    use_tls = getattr(settings, 'EMAIL_USE_TLS', '')
-    backend = getattr(settings, 'EMAIL_BACKEND', '')
+def _get_api_key():
+    key = getattr(settings, 'SENDGRID_API_KEY', '').strip()
+    if not key:
+        logger.error("[Email] SENDGRID_API_KEY is not configured.")
+        raise RuntimeError("SENDGRID_API_KEY is not set in environment variables.")
+    return key
+
+
+def _send_via_sendgrid(subject: str, text_body: str, html_body: str, recipients: list) -> bool:
+    api_key = _get_api_key()
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'techeliteitsolutions.kphb@gmail.com')
+
     logger.debug(
-        "[Email:Config] BACKEND=%s HOST=%s PORT=%s TLS=%s USER=%s PASSWORD_SET=%s",
-        backend, host, port, use_tls, user, bool(password),
+        "[Email:SendGrid] BACKEND=SendGrid API | FROM=%s | TO=%s | KEY_SET=%s",
+        from_email, recipients, bool(api_key),
     )
+
+    message = Mail(
+        from_email=from_email,
+        to_emails=recipients,
+        subject=subject,
+    )
+    message.content = [
+        Content(MimeType.text, text_body),
+        Content(MimeType.html, html_body),
+    ]
+
+    client = SendGridAPIClient(api_key)
+    response = client.send(message)
+
+    logger.info(
+        "[Email:SendGrid] Response status=%s body=%s",
+        response.status_code,
+        response.body,
+    )
+
+    if response.status_code not in (200, 202):
+        raise RuntimeError(
+            f"SendGrid returned unexpected status {response.status_code}: {response.body}"
+        )
+
+    return True
 
 
 def send_booking_email(data: dict) -> bool:
-    _diagnose_email_config()
     try:
         recipients = _get_admin_emails()
         if not recipients:
@@ -279,15 +310,7 @@ Please login to the admin panel to confirm or cancel this booking.
 </html>
         """.strip()
 
-        email = EmailMultiAlternatives(
-            subject=subject,
-            body=text_body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=recipients,
-        )
-        email.attach_alternative(html_body, "text/html")
-        email.send(fail_silently=False)
-
+        _send_via_sendgrid(subject, text_body, html_body, recipients)
         logger.info("[Email:Booking] SUCCESS — sent to %s for '%s'", recipients, data.get('name'))
         return True
 
@@ -298,7 +321,6 @@ Please login to the admin panel to confirm or cancel this booking.
 
 
 def send_contact_email(data: dict) -> bool:
-    _diagnose_email_config()
     try:
         recipients = _get_admin_emails()
         if not recipients:
@@ -474,15 +496,7 @@ Received At : {data.get('received_at', 'N/A')}
 </html>
         """.strip()
 
-        email = EmailMultiAlternatives(
-            subject=subject,
-            body=text_body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=recipients,
-        )
-        email.attach_alternative(html_body, "text/html")
-        email.send(fail_silently=False)
-
+        _send_via_sendgrid(subject, text_body, html_body, recipients)
         logger.info("[Email:Contact] SUCCESS — sent to %s for '%s'", recipients, data.get('name'))
         return True
 

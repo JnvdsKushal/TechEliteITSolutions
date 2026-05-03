@@ -1,6 +1,6 @@
 """
 Django settings for backend project.
-Production-ready with SendGrid email notifications.
+Production-ready with SendGrid API email notifications.
 """
 
 from pathlib import Path
@@ -30,7 +30,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'adminpanel',
     'courses',
-    'sendgrid_backend',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -139,13 +138,10 @@ LOGGING = {
     },
 }
 
-SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
 
 if not SENDGRID_API_KEY:
     print("⚠️  WARNING: SENDGRID_API_KEY is not set. Email features will not work.")
-
-EMAIL_BACKEND    = 'sendgrid_backend.SendgridBackend'
-SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 
 DEFAULT_FROM_EMAIL = 'TechElite IT Solutions <techeliteitsolutions.kphb@gmail.com>'
 
