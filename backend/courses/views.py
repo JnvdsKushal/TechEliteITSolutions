@@ -11,7 +11,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User as DjangoUser
-from django.core.mail import send_mail
 from django.conf import settings
 
 from .models import Course, Booking, ContactMessage, AuthToken
@@ -225,15 +224,7 @@ def contact(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def test_email(request):
-    logger.info("[TestEmail] Endpoint hit — attempting SMTP connection")
-    logger.info(
-        "[TestEmail] Config: HOST=%s PORT=%s TLS=%s USER=%s PASSWORD_SET=%s",
-        settings.EMAIL_HOST,
-        settings.EMAIL_PORT,
-        settings.EMAIL_USE_TLS,
-        settings.EMAIL_HOST_USER,
-        bool(settings.EMAIL_HOST_PASSWORD),
-    )
+    logger.info("[TestEmail] Endpoint hit — sending test email via SendGrid API")
 
     recipients = []
     if hasattr(settings, 'ADMIN_EMAILS') and settings.ADMIN_EMAILS:
@@ -248,30 +239,31 @@ def test_email(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
+    timestamp = datetime.now().strftime("%d %b %Y, %I:%M %p")
+
     try:
-        send_mail(
-            subject="✅ TechElite Test Email — SMTP Working",
-            message=(
-                "This is a test email sent from the /test-email/ endpoint.\n\n"
-                f"Timestamp : {datetime.now().strftime('%d %b %Y, %I:%M %p')}\n"
+        send_contact_email({
+            "name":        "TechElite Test",
+            "email":       recipients[0],
+            "phone":       "Not provided",
+            "subject":     "✅ SendGrid Test Email",
+            "message":     (
+                f"This is a test email sent from the /test-email/ endpoint.\n\n"
+                f"Timestamp : {timestamp}\n"
                 f"From      : {settings.DEFAULT_FROM_EMAIL}\n"
                 f"To        : {', '.join(recipients)}\n\n"
-                "If you received this, Gmail SMTP is configured correctly on Render."
+                f"If you received this, SendGrid API is configured correctly on Render."
             ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=recipients,
-            fail_silently=False,
-        )
+            "received_at": timestamp,
+        })
         logger.info("[TestEmail] SUCCESS — test email delivered to %s", recipients)
         return Response({
-            "status":     "success",
-            "message":    f"Test email sent to {', '.join(recipients)}",
-            "from":       settings.DEFAULT_FROM_EMAIL,
-            "smtp_host":  settings.EMAIL_HOST,
-            "smtp_port":  settings.EMAIL_PORT,
-            "tls":        settings.EMAIL_USE_TLS,
-            "user":       settings.EMAIL_HOST_USER,
-            "timestamp":  datetime.now().strftime("%d %b %Y, %I:%M %p"),
+            "status":    "success",
+            "message":   f"Test email sent to {', '.join(recipients)}",
+            "from":      settings.DEFAULT_FROM_EMAIL,
+            "to":        recipients,
+            "api_key_set": bool(getattr(settings, 'SENDGRID_API_KEY', '')),
+            "timestamp": timestamp,
         })
     except Exception as e:
         logger.error("[TestEmail] FAILED — %s", str(e))
