@@ -138,30 +138,23 @@ LOGGING = {
     },
 }
 
-_email_user = os.getenv('EMAIL_HOST_USER', '').strip()
-_email_pass = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+_email_user = os.getenv('EMAIL_HOST_USER')
+_email_pass = os.getenv('EMAIL_HOST_PASSWORD')
 
-if not _email_user:
-    raise ValueError(
-        "EMAIL_HOST_USER environment variable is not set or empty. "
-        "Add it to your Render environment variables."
-    )
-
-if not _email_pass:
-    raise ValueError(
-        "EMAIL_HOST_PASSWORD environment variable is not set or empty. "
-        "Add your Gmail App Password to Render environment variables."
-    )
+if not _email_user or not _email_pass:
+    print("⚠️ WARNING: Email config missing. Email features will not work.")
 
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'
 EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
 EMAIL_USE_SSL       = False
-EMAIL_HOST_USER     = _email_user
-EMAIL_HOST_PASSWORD = _email_pass
+
+EMAIL_HOST_USER     = (_email_user or "").strip()
+EMAIL_HOST_PASSWORD = (_email_pass or "").strip()
+
 EMAIL_TIMEOUT       = 30
-DEFAULT_FROM_EMAIL  = f"TechElite IT Solutions <{_email_user}>"
+DEFAULT_FROM_EMAIL  = f"TechElite IT Solutions <{EMAIL_HOST_USER}>"
 
 ADMIN_EMAILS = [
     'techeliteitsolutions.kphb@gmail.com',
