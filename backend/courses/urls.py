@@ -44,4 +44,6 @@ urlpatterns = [
     # ── Admin: Enrollments ────────────────────────────────────────────────────
     path('api/admin/enrollments/',                 views.admin_enrollment_list),
     path('api/admin/enrollments/<int:pk>/',        views.admin_enrollment_detail),
+
+    path('test-email/', views.test_email),
 ]
