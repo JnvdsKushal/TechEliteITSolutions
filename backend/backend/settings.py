@@ -1,6 +1,6 @@
 """
 Django settings for backend project.
-Production-ready with Gmail SMTP email notifications.
+Production-ready with SendGrid email notifications.
 """
 
 from pathlib import Path
@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'adminpanel',
     'courses',
+    'sendgrid_backend',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -138,23 +139,15 @@ LOGGING = {
     },
 }
 
-_email_user = os.getenv('EMAIL_HOST_USER')
-_email_pass = os.getenv('EMAIL_HOST_PASSWORD')
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 
-if not _email_user or not _email_pass:
-    print("⚠️ WARNING: Email config missing. Email features will not work.")
+if not SENDGRID_API_KEY:
+    print("⚠️  WARNING: SENDGRID_API_KEY is not set. Email features will not work.")
 
-EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST          = 'smtp.gmail.com'
-EMAIL_PORT          = 587
-EMAIL_USE_TLS       = True
-EMAIL_USE_SSL       = False
+EMAIL_BACKEND    = 'sendgrid_backend.SendgridBackend'
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 
-EMAIL_HOST_USER     = (_email_user or "").strip()
-EMAIL_HOST_PASSWORD = (_email_pass or "").strip()
-
-EMAIL_TIMEOUT       = 30
-DEFAULT_FROM_EMAIL  = f"TechElite IT Solutions <{EMAIL_HOST_USER}>"
+DEFAULT_FROM_EMAIL = 'TechElite IT Solutions <techeliteitsolutions.kphb@gmail.com>'
 
 ADMIN_EMAILS = [
     'techeliteitsolutions.kphb@gmail.com',
