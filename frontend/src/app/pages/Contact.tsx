@@ -147,10 +147,16 @@ export function Contact() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/auth/contact/', {
+      const res = await fetch('https://techeliteitsolutions-1.onrender.com/api/auth/contact/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, message: form.message }),
+       body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            phone: "Not provided",
+            subject: "Website Contact Form",
+            message: form.message
+          })
       });
       if (!res.ok) throw new Error('Failed');
       setSubmitted(true);

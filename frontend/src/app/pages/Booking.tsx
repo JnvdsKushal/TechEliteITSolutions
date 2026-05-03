@@ -13,7 +13,7 @@ export function Booking() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/bookings/', {
+      const res = await fetch('https://techeliteitsolutions-1.onrender.com/api/bookings/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: formData.name, email: formData.email, phone: formData.phone, course_title: formData.course, booking_type: 'demo', preferred_date: formData.date || null, preferred_time: formData.time || null, message: formData.message, mode: formData.mode }),
