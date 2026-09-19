@@ -233,18 +233,14 @@ export function Navigation() {
                   )}
                 </div>
               </div>
-            ) : (
-              <>
-                <Link to="/login"
-                  className="text-sm font-semibold text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 rounded-xl transition-colors">
-                  Login
-                </Link>
-                <Link to="/register"
-                  className="text-sm font-bold bg-blue-600 dark:bg-blue-500 text-white px-5 py-2 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-sm">
-                  Register
-                </Link>
-              </>
-            )}
+           ) : (
+  <Link
+    to="/contact"
+    className="text-sm font-bold bg-blue-600 dark:bg-blue-500 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 shadow-sm hover:shadow-md"
+  >
+    Get in Touch
+  </Link>
+)}
           </div>
 
           {/* ── Mobile: theme toggle + hamburger ── */}

@@ -153,7 +153,7 @@ export function Contact() {
        body: JSON.stringify({
             name: form.name,
             email: form.email,
-            phone: "form.phone",
+            phone: form.phone,
             subject: "Website Contact Form",
             message: form.message
           })
