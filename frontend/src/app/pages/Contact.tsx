@@ -66,13 +66,13 @@ const locations = [
     phone: "+91 9188494949",
     mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d121799.31210115478!2d78.25010542387909!3d17.448773999999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb911fe3b4ff87%3A0x45545e58029b8dab!2sTech%20Elite%20IT%20solutions!5e0!3m2!1sen!2sin!4v1774014467752!5m2!1sen!2sin"
   },
-  {
-    name: "Tech Elite IT Solutions KPHB",
-    label: "KPHB Branch",
-    address: "KPHB, Hyderabad, Telangana",
-    phone: "9133966888",
-    mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d121799.31210115478!2d78.25010542387909!3d17.448773999999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x82d7e19452198a47%3A0xc3b6f2d62f272075!2sTech%20Elite%20IT%20Solutions%20Kphb!5e0!3m2!1sen!2sin!4v1774014488352!5m2!1sen!2sin"
-  }
+  // {
+  //   name: "Tech Elite IT Solutions KPHB",
+  //   label: "KPHB Branch",
+  //   address: "KPHB, Hyderabad, Telangana",
+  //   phone: "9133966888",
+  //   mapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d121799.31210115478!2d78.25010542387909!3d17.448773999999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x82d7e19452198a47%3A0xc3b6f2d62f272075!2sTech%20Elite%20IT%20Solutions%20Kphb!5e0!3m2!1sen!2sin!4v1774014488352!5m2!1sen!2sin"
+  // }
 ];
 
 // ── Animation helpers ─────────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ function InfoCard({ icon: Icon, label, value, href }: {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone:'', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -153,14 +153,14 @@ export function Contact() {
        body: JSON.stringify({
             name: form.name,
             email: form.email,
-            phone: "Not provided",
+            phone: "form.phone",
             subject: "Website Contact Form",
             message: form.message
           })
       });
       if (!res.ok) throw new Error('Failed');
       setSubmitted(true);
-      setForm({ name: '', email: '', message: '' });
+      setForm({ name: '', email: '', phone: '', message: '' });
       setTimeout(() => setSubmitted(false), 4000);
     } catch {
       setError('Failed to send message. Please try again.');
@@ -285,13 +285,13 @@ export function Contact() {
 
               <div className="flex flex-col gap-3">
                 <motion.div {...fadeUp(0.18)}>
-                  <InfoCard icon={Mail}   label="Email us"      value="info@techeliteitsolutions.com" href="mailto:info@techeliteitsolutions.com" />
+                  <InfoCard icon={Mail}   label="Email us"      value="techeliteitsolutions@gmail.com" href="mailto:techeliteitsolutions@gmail.com" />
                 </motion.div>
                 <motion.div {...fadeUp(0.23)}>
-                  <InfoCard icon={Phone}  label="Call us"       value="9133966888 · 9133454949"       href="tel:+919133966888" />
+                  <InfoCard icon={Phone}  label="Call us"       value="9188494949 · 9133919666"       href="tel:+919188494949" />
                 </motion.div>
                 <motion.div {...fadeUp(0.28)}>
-                  <InfoCard icon={MapPin} label="Our locations" value="Madhapur Branch · KPHB Branch, Hyderabad" />
+                  <InfoCard icon={MapPin} label="Our locations" value="Madhapur Branch, Hyderabad" />
                 </motion.div>
                 <motion.div {...fadeUp(0.33)}>
                   <InfoCard icon={Clock}  label="Working hours" value="Mon – Sat: 9:00 AM – 7:00 PM" />
@@ -341,6 +341,15 @@ export function Contact() {
                 <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
                   <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Name" required className={inputCls} />
                   <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email" required className={inputCls} />
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="Phone Number"
+                    required
+                    className={inputCls}
+                  />
                   <textarea name="message" value={form.message} onChange={handleChange} placeholder="Message" required rows={8} className={inputCls + ' resize-none'} />
                   <motion.button
                     type="submit" disabled={loading}

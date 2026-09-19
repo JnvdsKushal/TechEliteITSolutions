@@ -71,7 +71,7 @@ Your account has been created successfully. You can now log in and explore our c
 Login here: https://techeliteitsolutions.com/login
 
 If you have any questions, feel free to reach out to us at:
-📧 Techeliteitsolutions.kphb@gmail.com
+📧 Techeliteitsolutions@gmail.com
 
 Best regards,
 Team TechElite IT Solutions

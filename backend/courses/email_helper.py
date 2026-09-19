@@ -6,7 +6,7 @@ import logging
 import traceback
 from django.conf import settings
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, To, From, Subject, HtmlContent, Content, MimeType
+from sendgrid.helpers.mail import Mail, Content
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def _get_api_key():
 
 def _send_via_sendgrid(subject: str, text_body: str, html_body: str, recipients: list) -> bool:
     api_key = _get_api_key()
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'techeliteitsolutions.kphb@gmail.com')
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'techeliteitsolutions@gmail.com')
 
     logger.debug(
         "[Email:SendGrid] BACKEND=SendGrid API | FROM=%s | TO=%s | KEY_SET=%s",
@@ -42,8 +42,8 @@ def _send_via_sendgrid(subject: str, text_body: str, html_body: str, recipients:
         subject=subject,
     )
     message.content = [
-        Content(MimeType.text, text_body),
-        Content(MimeType.html, html_body),
+        Content("text/plain", text_body),
+        Content("text/html", html_body),
     ]
 
     client = SendGridAPIClient(api_key)

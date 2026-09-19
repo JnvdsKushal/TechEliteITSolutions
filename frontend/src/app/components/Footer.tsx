@@ -96,7 +96,7 @@ export function Footer() {
     </div>
 
     {/* 🔵 KPHB Branch */}
-    <div>
+    {/* <div>
       <p className="text-blue-400 font-semibold text-sm mb-2">KPHB Branch</p>
       <ul className="space-y-2 text-sm text-gray-400 dark:text-slate-500">
 
@@ -120,7 +120,7 @@ export function Footer() {
         </li>
 
       </ul>
-    </div>
+    </div> */}
 
   </div>
 </div>
