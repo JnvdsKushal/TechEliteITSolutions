@@ -141,7 +141,7 @@ SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
 if not SENDGRID_API_KEY:
     print("⚠️  WARNING: SENDGRID_API_KEY is not set. Email features will not work.")
 
-DEFAULT_FROM_EMAIL = 'TechElite IT Solutions <noreply@techeliteitsolutions.com>'
+DEFAULT_FROM_EMAIL = 'TechElite IT Solutions <techeliteitsolutions@gmail.com>'
 
 ADMIN_EMAILS = [
     'techeliteitsolutions@gmail.com',
