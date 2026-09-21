@@ -349,25 +349,18 @@ export function OfflineCourses() {
         </div>
 
         {/* Right — Map / Location Card */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl h-64 flex items-center justify-center border border-blue-100">
-          <div className="text-center">
-            <MapPin
-              className="text-blue-300 mx-auto mb-3"
-              size={48}
-            />
-
-            <p
-              className="font-bold text-gray-700 text-lg"
-              style={{ fontFamily: "'Exo 2', sans-serif" }}
-            >
-              TechElite IT Solutions
-            </p>
-
-            <p className="text-sm text-gray-400">
-              Hyderabad, Telangana
-            </p>
-          </div>
-        </div>
+        <div className="rounded-2xl overflow-hidden h-64 border border-blue-100 shadow-sm">
+  <iframe
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.2283966493974!2d78.38675787412537!3d17.448779101035715!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb911fe3b4ff87%3A0x45545e58029b8dab!2sTech%20Elite%20IT%20solutions!5e0!3m2!1sen!2sin!4v1789977225704!5m2!1sen!2sin"
+    width="100%"
+    height="100%"
+    style={{ border: 0 }}
+    allowFullScreen
+    loading="lazy"
+    referrerPolicy="strict-origin-when-cross-origin"
+    title="TechElite IT Solutions - Madhapur Location"
+  />
+</div>
 
       </div>
     </motion.div>
