@@ -140,23 +140,27 @@ function CourseCard({ course, index }: { course: typeof staticCourses[0]; index:
 /* ── Main ────────────────────────────────────────────────────────────────── */
 export function OfflineCourses() {
   const [courses, setCourses] = useState(staticCourses);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/courses/offline/')
-      .then(res => res.json())
-      .then(data => { if (data && data.length > 0) setCourses(data); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCourses(data);
+        }
+      })
+      .catch(error => {
+        console.warn(
+          'Could not load courses from backend. Using static courses.',
+          error
+        );
+      });
   }, []);
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <motion.div animate={{ scale: [1, 1.08, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }}
-        className="text-blue-600 text-xl font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>
-        Loading Courses…
-      </motion.div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -234,55 +238,141 @@ export function OfflineCourses() {
         </div>
       </section>
 
-      {/* ── Visit Center ─────────────────────────────────────────────────── */}
-      <section className="relative py-16 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-sky-50 to-blue-50" />
-        <NetworkBackground />
-        <div className="absolute inset-0 z-[2] pointer-events-none overflow-hidden">
-          <motion.div className="absolute top-0 right-0 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl"
-            animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }} />
-        </div>
-        <div className="relative z-[3] max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-blue-100 shadow-xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              <div>
-                <h2 className="text-3xl font-black text-gray-900 mb-4" style={{ fontFamily: "'Exo 2', sans-serif" }}>
-                  Visit Our Training Center
-                </h2>
-                <p className="text-gray-500 mb-6">Experience world-class infrastructure and meet our expert trainers in person.</p>
-                <div className="space-y-4">
-                  {[
-                    { icon: MapPin,   label: 'Address',  value: 'Plot no.231, 2nd floor, Road no.12, Swamy Ayyappa Society, Madhapur, Hyderabad-500081 \n  Road no.2, Dhanalaxmi Center, ICICI Bank Building, 3rd Floor, KPHB Colony, Hyderabad-500072', sub: 'www.techeliteitsolutions.com' },
-                    { icon: Clock,    label: 'Timing',   value: 'Monday – Saturday, 9:00 AM – 7:00 PM' },
-                    { icon: Building, label: 'Contact',  value: '9133966888 · 9133454949' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
-                        <item.icon className="text-blue-600" size={16} />
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-800 text-sm">{item.label}</div>
-                        <div className="text-gray-500 text-sm whitespace-pre-line">
-                                {item.value}
-                        </div>
-                        {item.sub && <div className="text-xs text-blue-500 font-medium mt-0.5">{item.sub}</div>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+{/* ── Visit Center ─────────────────────────────────────────────────── */}
+<section className="relative py-16 overflow-hidden">
+  <div className="absolute inset-0 bg-gradient-to-br from-white via-sky-50 to-blue-50" />
+  <NetworkBackground />
+
+  <div className="absolute inset-0 z-[2] pointer-events-none overflow-hidden">
+    <motion.div
+      className="absolute top-0 right-0 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl"
+      animate={{ scale: [1, 1.1, 1] }}
+      transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+    />
+  </div>
+
+  <div className="relative z-[3] max-w-7xl mx-auto px-6">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-blue-100 shadow-xl"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+
+        {/* Left — Details */}
+        <div>
+          <h2
+            className="text-3xl font-black text-gray-900 mb-4"
+            style={{ fontFamily: "'Exo 2', sans-serif" }}
+          >
+            Visit Our Training Center
+          </h2>
+
+          <p className="text-gray-500 mb-6">
+            Experience world-class infrastructure and meet our expert trainers
+            in person.
+          </p>
+
+          <div className="space-y-5">
+
+            {/* Location */}
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                <MapPin className="text-blue-600" size={16} />
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl h-64 flex items-center justify-center border border-blue-100">
-                <div className="text-center">
-                  <MapPin className="text-blue-300 mx-auto mb-3" size={48} />
-                  <p className="font-bold text-gray-700 text-lg" style={{ fontFamily: "'Exo 2', sans-serif" }}>TechElite IT Solutions</p>
-                  <p className="text-sm text-gray-400">Hyderabad, Telangana</p>
+
+              <div>
+                <div className="font-bold text-gray-800 text-sm mb-1">
+                  Address
+                </div>
+
+                <div className="text-gray-500 text-sm leading-relaxed">
+                  <div>
+                    Plot no.231, 2nd floor, Road no.12,
+                    <br />
+                    Swamy Ayyappa Society, Madhapur,
+                    <br />
+                    Hyderabad-500081
+                  </div>
+
+                  {/* <div className="mt-3">
+                    Road no.2, Dhanalaxmi Center,
+                    <br />
+                    ICICI Bank Building, 3rd Floor,
+                    <br />
+                    KPHB Colony, Hyderabad-500072
+                  </div> */}
+                </div>
+
+                <div className="text-xs text-blue-500 font-medium mt-2">
+                  www.techeliteitsolutions.com
                 </div>
               </div>
             </div>
-          </motion.div>
+
+            {/* Timing */}
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                <Clock className="text-blue-600" size={16} />
+              </div>
+
+              <div>
+                <div className="font-bold text-gray-800 text-sm">
+                  Timing
+                </div>
+
+                <div className="text-gray-500 text-sm">
+                  Monday – Saturday, 9:00 AM – 7:00 PM
+                </div>
+              </div>
+            </div>
+
+            {/* Contact */}
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                <Building className="text-blue-600" size={16} />
+              </div>
+
+              <div>
+                <div className="font-bold text-gray-800 text-sm">
+                  Contact
+                </div>
+
+                <div className="text-gray-500 text-sm">
+                  +91 9188494949  · +91 9133919666
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
-      </section>
+
+        {/* Right — Map / Location Card */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl h-64 flex items-center justify-center border border-blue-100">
+          <div className="text-center">
+            <MapPin
+              className="text-blue-300 mx-auto mb-3"
+              size={48}
+            />
+
+            <p
+              className="font-bold text-gray-700 text-lg"
+              style={{ fontFamily: "'Exo 2', sans-serif" }}
+            >
+              TechElite IT Solutions
+            </p>
+
+            <p className="text-sm text-gray-400">
+              Hyderabad, Telangana
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </motion.div>
+  </div>
+</section>
 
       {/* ── CTA — light theme + NetworkBackground ────────────────────────── */}
       <section className="relative py-20 overflow-hidden">
